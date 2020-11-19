@@ -14,6 +14,7 @@ import { NinthAsyncDirectiveAttrComponent } from './ninth-async-directive-attr/n
 import { HighlightDirective } from './ninth-async-directive-attr/directive-attr/highlight.directive';
 import { NewDirectiveDirective } from './ninth-async-directive-attr/new-directive/new-directive.directive';
 import { TenthFakeAsyncTickComponent } from './tenth-fake-async-tick/tenth-fake-async-tick.component';
+import { AppRoutingModule } from './app-routing.module';
 
 @NgModule({
   declarations: [
@@ -32,7 +33,8 @@ import { TenthFakeAsyncTickComponent } from './tenth-fake-async-tick/tenth-fake-
     TenthFakeAsyncTickComponent
   ],
   imports: [
-    BrowserModule
+    BrowserModule,
+    AppRoutingModule
   ],
   providers: [],
   bootstrap: [AppComponent]
