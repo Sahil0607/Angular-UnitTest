@@ -1,0 +1,102 @@
+* Test attribute directive
+--> Test directive attire. This directive change color to yellow where it apply.
+--> highlight.directive.ts file
+
+import { Directive, Input, ElementRef, OnChanges } from '@angular/core';
+
+@Directive({
+  selector: '[highlight]'
+})
+export class HighlightDirective implements OnChanges {
+  defaultColor =  'yellow'; 
+  @Input('highlight') bgColor: string;
+
+  constructor(private el: ElementRef) {
+  }
+
+  ngOnChanges() {
+    this.el.nativeElement.style.backgroundColor = this.bgColor || this.defaultColor;
+  }
+}
+
+--> spec.ts file.
+@Component({
+  template: `
+    <p highlight="cyan">First</p>  // Test with value
+    <p highlight>Second</p>  // Test without value
+  `
+})
+class DirectiveHostComponent { 
+}
+
+describe('HighlightDirective', () => {
+  let fixture: ComponentFixture<DirectiveHostComponent>;
+  
+  beforeEach(async(() => {
+    TestBed.configureTestingModule({    // Dont forget to add HighlightDirective
+      declarations: [ DirectiveHostComponent, HighlightDirective ]  
+    })
+    .compileComponents();
+  }));
+
+  beforeEach(() => {
+    fixture = TestBed.createComponent(DirectiveHostComponent);
+    fixture.detectChanges(); 
+  });
+
+  it('should highlight first element with cyan ', () => {
+    const de = fixture.debugElement.queryAll(By.css('p'))[0];
+    expect(de.nativeElement.style.backgroundColor).toBe('cyan');
+  });
+
+  it('should highlight second element with default color ', () => {
+    const de = fixture.debugElement.queryAll(By.css('p'))[1];
+    const directive = de.injector.get(HighlightDirective);  // Get directive
+    expect(de.nativeElement.style.backgroundColor).toBe(directive.defaultColor);
+  });
+});
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+* Asynchronous Operation
+--> When we use promise, we have to use then instead subscribe.
+--> Issue is it() is called before then(). So test is execute before promise. So we can resolve it using async method.
+--> So using async it() will wait to execute then() method. Then execute itself.
+--> It is not happen with observable. Bcoz it will execute immediately.
+
+--> service.ts file
+getTodosPromise() {
+    return this.http.get('...').pipe(map(r => r)).toPromise();
+  }
+
+--> component.ts file using promise
+  ngOnInit() {
+    this.service.getTodosPromise().then(t => this.todos = t);
+  }
+
+1. This is one way to use async method
+  it('should load todos from the server', async(() => {
+    const service = TestBed.get(TodoTestService);
+
+    // fixture.debugElement.injector.get(TodoTestService); // This is more verbal so use different approach
+    spyOn(service, 'getTodosPromise').and.returnValues(Promise.resolve([ [1, 2, 3] ]));
+    fixture.detectChanges();  // Angular call ngoninit and initialized todos property.
+
+    fixture.whenStable().then(() => {    // Delay this line until async process completed.
+        expect(component.todos.length).toBe(3);
+    });
+  }));
+
+2. This is another way to using fakeAsync and tick().
+
+  it('should load todos from the server', fakeAsync(() => {
+    const service = TestBed.get(TodoTestService);
+
+    // fixture.debugElement.injector.get(TodoTestService); // This is more verbal so use different approach
+    spyOn(service, 'getTodosPromise').and.returnValues(Promise.resolve([ [1, 2, 3] ]));
+    fixture.detectChanges();  // Angular call ngoninit and initialized todos property.
+
+    tick(); // Delay this line until async process completed. Or simulate passage of time. Can use tick(1000); wait 1 sec
+    expect(component.todos.length).toBe(3);
+  }));
+

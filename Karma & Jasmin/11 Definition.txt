@@ -1,0 +1,200 @@
+* Definition 
+--> nga-login-validation.component.spec.ts
+
+1. @Component (Component inside in test host)
+--> component.spec.ts
+@Component({
+  template: `
+    <dashboard-hero
+      [hero]="hero" (selected)="onSelected($event)">
+    </dashboard-hero>`
+})
+
+--> You could test with the actual DashboardComponent. But doing so could require a lot of setup, especially when its template features an *ngFor, other components, layout HTML, additional bindings, a constructor that injects multiple services, and it starts interacting with those services right away.
+--> This approach in spec.ts file will resolve the issue.The test host sets the component's hero input property with its test hero. It binds the component's selected event with its onSelected handler, which records the emitted hero in its selectedHero property.
+--> Later, the tests will be able to easily check selectedHero to verify that the DashboardHeroComponent.selected event emitted the expected hero.
+
+2. @Pipe
+--> Same like component we can use fake pipe in test component file.
+@pipe({name: 'masking'})
+Class MaskingMokePipe implements PipeTransform {
+	transform(value: string): string {
+		// Do transformation stuff here.
+		return value;
+	}
+}
+
+3 jasmin.createSpy('').and.returnValue(null);
+--> When there is not a function to spy on, jasmine.createSpy can create a "bare" spy. This spy acts as any other spy - tracking calls, arguments, etc. But there is no implementation behind it. Spies are JavaScript objects and can be used as such.
+beforeEach(function() {
+    whatAmI = jasmine.createSpy('whatAmI');
+
+    whatAmI("I", "am", "a", "spy");
+  });
+
+4. jasmine.createSpyObj()
+--> In order to create a mock with multiple spies, use jasmine.createSpyObj and pass an array of strings. It returns an object that has a property for each string that is a spy.
+beforeEach(function() {
+    tape = jasmine.createSpyObj('tape', ['play', 'pause', 'stop', 'rewind']);
+
+    tape.play();
+    tape.pause();
+    tape.rewind(0);
+  });
+
+5. Stub
+--> So a stub is a function that replaces a real implementation of an existing function. Stubbing is, generally, an operation local to a test. We use stubs if we want to:
+1. control individual method behavior for a specific test case,
+2. prevent a method from making side effects like communicating with the outside world using Angular's HttpClient.
+
+import { of } from 'rxjs';
+
+export class StudentsServiceStub {
+  getUserList() {
+    return of({
+      data: [
+        { id: 1, first_name: 'George', last_name: 'Bluth', avatar: 'https://s3.amazonaws.com/uifaces/faces/twitter/calebogden/128.jpg' },
+        { id: 2, first_name: 'Janet', last_name: 'Weaver', avatar: 'https://s3.amazonaws.com/uifaces/faces/twitter/josephstein/128.jpg' },
+        { id: 3, first_name: 'Emma', last_name: 'Wong', avatar: 'https://s3.amazonaws.com/uifaces/faces/twitter/olegpogodaev/128.jpg' },
+      ],
+    });
+  }
+
+  getUserDetails() {
+    return of({
+      data: {
+        id: 1,
+        first_name: 'George',
+        last_name: 'Bluth',
+        avatar: 'https://s3.amazonaws.com/uifaces/faces/twitter/calebogden/128.jpg',
+      },
+    });
+  }
+}
+
+--> useClass ( providers: [{ provide: StudentsService, useClass: StudentsServiceStub }])
+useClass replaces the actual class instance (StudentsService) , injected as object property “provide”, to the one which is being injected as object property “useClass” (StudentsServiceStub).
+
+6. Observable { return new Observer} // 109
+--> The following is an Observable that pushes the values 1, 2, 3 immediately (synchronously) when subscribed, and the value 4 after one second has passed since the subscribe call, then completes:
+
+import { Observable } from 'rxjs';
+ 
+const observable = new Observable(subscriber => {
+  subscriber.next(1);
+  subscriber.next(2);
+  subscriber.next(3);
+  setTimeout(() => {
+    subscriber.next(4);
+    subscriber.complete();
+  }, 1000);
+});
+ 
+console.log('just before subscribe');
+observable.subscribe({
+  next(x) { console.log('got value ' + x); },
+  error(err) { console.error('something wrong occurred: ' + err); },
+  complete() { console.log('done'); }
+});
+console.log('just after subscribe');
+
+7. no_error_schma and custome_element_schma. // PPT
+A. schemas: [ NO_ERRORS_SCHEMA ]
+--> What is NO_ERRORS_SCHEMA telling the TestBed to do? Basically, ignore any template errors. So, when it hits your <my-child-component> tag, you don’t have to import MyChildComponent into your TestBed in your spec file. Angular will just treat that tag like any old div and continue on its way. In the above example you don’t need to import any of the child components of MyParentComponent.
+<my-child [item]="items"
+          (clicked)="onClick($event)">
+</my-child>
+
+B. schemas: [CUSTOM_ELEMENTS_SCHEMA]
+When added to a TestBed’s schemas collection, this schema will allow the compilation of your test environment without having to provide declarations for all of the elements contained within the template. 
+--> What this will do, is safely ignore any custom elements in TestComponent’s template, crucial for ensuring you’re testing the component in isolation. However, there are a few gotchas with this schema, as it only allows named tags and attributes with the hyphen (-) in their name, restricting users to industry-standard naming conventions.
+
+--> This feature will allow you to add, remove or set any property that is configured via the component’s decorator, including the template. Here is an example below:
+
+fixture = TestBed.overrideComponent(OverriddenComponent, {
+    set: {
+        template: `<h1>Test</h1>`
+    }
+}).createComponent(OverriddenComponent);
+--> Setting the component template to a simple string will remove the requirement of providing all necessary dependencies and allow you to test the underlying component code. You can also replace internal declarations to match anything new you want to test within the component.
+
+8. Fixture.debugelement.injector.get(myService).  // ppt Alernative Testbed.get(myService)
+--> The tests need access to the (stub) UserService injected into the WelcomeComponent.
+--> The safest way to get the injected service, the way that always works, is to get it from the injector of the component-under-test. The component injector is a property of the fixture's DebugElement.
+// UserService actually injected into the component
+userService = fixture.debugElement.injector.get(UserService);
+Or
+Testbed.get(UserService).  // Same but not working in new version.
+
+* TestBed.inject()
+You may also be able to get the service from the root injector via TestBed.inject(). This is easier to remember and less verbose. But it only works when Angular injects the component with the service instance in the test's root injector.
+// UserService from the root injector
+userService = TestBed.inject(UserService);
+
+9. spyOn().and.callThrough()
+--> By chaining the spy with and.callThrough, the spy will still track all calls to it but in addition it will delegate to the actual implementation.
+ beforeEach(function() {
+    foo = {
+      setBar: function(value) {
+        bar = value;
+      },
+      getBar: function() {
+        return bar;
+      }
+    };
+
+    spyOn(foo, 'getBar').and.callThrough();
+
+    foo.setBar(123);
+    fetchedBar = foo.getBar();
+  });
+
+10. toHaveBeenCalled()  // in prep text file
+--> The toHaveBeenCalled matcher will return true if the spy was called.
+ it("tracks that the spy was called", function() {
+    expect(foo.setBar).toHaveBeenCalled();
+  });
+
+11. toHaveBeenCalledWith('abc')  // in text file
+--> The toHaveBeenCalledWith matcher will return true if the argument list matches any of the recorded calls to the spy.
+it("tracks all the arguments of its calls", function() {
+    expect(foo.setBar).toHaveBeenCalledWith(123);
+    expect(foo.setBar).toHaveBeenCalledWith(456, 'another param');
+  });
+
+12. toHaveBeenCalledTimes(2)
+--> The toHaveBeenCalledTimes matcher will pass if the spy was called the specified number of times.
+ it("tracks that the spy was called x times", function() {
+    expect(foo.setBar).toHaveBeenCalledTimes(2);
+  });
+
+13. toBeDefined()
+-->The 'toBeDefined' matcher compares against `undefined`
+it("The 'toBeDefined' matcher compares against `undefined`", function() {
+    var a = {
+      foo: "foo"
+    };
+
+    expect(a.foo).toBeDefined();
+    expect(a.bar).not.toBeDefined();
+  });
+
+14. TestBed.get().  // Deprecated // Outdated
+--> Use for inject service or component in test file.
+
+15. Router
+--> https://angular.io/guide/testing-components-scenarios#routing-component
+
+16. Test Coveragee
+--> Use: ng test --code-coverage
+--> We can see new folder of coverage which shows how much code is under test. Open index.html in browser.
+--> We can see summery of code coverage. In specificities we can see Percentage of code is tested.
+
+17. Config file for test // PPT
+--> angular.json : Tell webpack where the test entry point is
+--> test.js : Test Entry Point. Tell Webpack bundler what file to compile 
+--> kerma.comfig.js: Configuration for karma and its plugin
+--> tsconfig.spec.ts: Typescript configuration for test file.
+
+Deprecation: in its programming sense, is the process of taking older code and marking it as no longer being useful within the codebase, usually because it has been superseded by newer code. The deprecated code is not immediately removed from the codebase because doing so may cause regression errors.
+

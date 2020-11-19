@@ -1,0 +1,34 @@
+* Example: 
+
+Duplicate code: Select Code --> Shift + Alt + Down Arrow
+Save all vscode = Option + Shift + s
+
+* Testing Strings and Arrays
+--> Use .toContain('Sahil') for check if value contain is in the string or array
+
+export const greet = (name) => {
+  return `Hey my name is ${name}`;
+};
+
+--> Test file
+describe('greet', () => {
+  it('Should include the name in the message', () => {
+    expect(greet('Sahil')).toContain('Sahil');
+  });
+});
+
+--> Array
+export const country = () => {
+  return ['USA', 'India', 'Japan', 'UK'];
+};
+
+describe('getCountry', () => {
+  it('Should check country available in the array', () => {
+    expect(country()).toContain('USA');
+    expect(country()).toContain('India');
+    expect(country()).toContain('UK');
+  });
+});
+
+
+

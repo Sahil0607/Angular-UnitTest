@@ -1,0 +1,136 @@
+* Form
+import { FormGroup, FormBuilder, Validators } from '@angular/forms';
+
+export class FirstTestComponent implements OnInit {
+  form: FormGroup;
+  constructor(fb: FormBuilder) {
+    this.form = fb.group({
+      name: ['', Validators.required],
+      email: ['']
+    });
+  }
+
+  ngOnInit(): void {}
+
+}
+
+1. We have to make sure when component initialized, We have form group with two form object(Name and email). 
+2. Validator for form control. Make sure name field is require.
+
+// Arrange   // Act (Call method)    // Assert
+
+FirstTestComponent.spec.ts File
+
+describe('FirstTestComponent', () => {
+    let component: FirstTestComponent;
+
+    beforeEach(() => {
+        component = new FirstTestComponent(new FormBuilder());   // Need instance of form ex: FormBuilder
+    });
+
+    it('should create form with 2 controls', () => {
+        expect(component.form.contains('name')).toBeTruthy();  // Also use .toBe(true);
+        expect(component.form.contains('email')).toBeTruthy();
+    });
+
+    it('should make name control require', () => {
+        const control = component.form.get('name'); // Form control inside in form group
+
+        control.setValue('');  // Act
+        expect(control.valid).toBeFalse();
+    });
+  });
+
+-  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
+
+* Event Emetter
+--> We are not using @Output here. Bcoz we are not dealing with template here. We will do it in integration testing.
+
+export class FirstTestComponent implements OnInit {
+  totalVots = 0;
+  voteChanged = new EventEmitter();
+  constructor() {}
+
+  ngOnInit(): void {}
+
+  upVote() {
+    this.totalVots++;
+    this.voteChanged.emit(this.totalVots);
+  }
+}
+
+first-testing.spec.ts File
+describe('FirstTestComponent', () => {
+    let component: FirstTestComponent;
+
+    beforeEach(() => {
+        component = new FirstTestComponent();
+    });
+
+    it('Should raise voteChanged event when upvoted', () => {
+        let totalVotes = null;
+        component.voteChanged.subscribe(tv => totalVotes = tv);  // Arrange
+
+        component.upVote();  // Act
+        expect(totalVotes).toBe(1); // Assert. More Specific. Both will work
+        // expect(totalVotes).not.toBeNull();  // General
+    });
+});
+
+-  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
+
+* Conformation box. (Delete method)
+--> We need 2 test.
+1. Call server to delete method.
+2. Not call server when press no in confirm.
+
+delete(id) {
+    if (confirm('Are you sure?')) {
+      this.firstTestService.delete(id).subscribe();
+    }
+  }
+
+--> We cannot do window.confirm() method in test file. So we will use spyOn method. SpyOn method is in 6th file.
+
+First-test.component.spec.ts file
+describe('FirstTestComponent', () => {
+    let component: FirstTestComponent;
+    let service: FirstTestService;
+
+    beforeEach(() => {
+        service = new FirstTestService(null);
+        component = new FirstTestComponent(service);
+    });
+
+    it('Should call server to delete todo item if user confirms', () => {
+        spyOn(window, 'confirm').and.returnValue(true);
+        const spy = spyOn(service, 'delete').and.returnValue(empty());
+
+        component.delete('1');
+        expect(spy).toHaveBeenCalledWith('1');   // Make sure not pass different id accidently
+    });
+
+    it('Should Not call server if user cancels', () => {
+        spyOn(window, 'confirm').and.returnValue(false);
+        const spy = spyOn(service, 'delete').and.returnValue(empty());
+
+        component.delete('1');
+        expect(spy).not.toHaveBeenCalled();   // Make sure not pass different id accidently
+    });
+});
+
+-  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
+
+* Test Coverage
+--> Use: ng test --code-coverage
+--> We can see new folder of coverage which shows how much code is under test. Open index.html in browser.
+--> We can see summery of code coverage. In specificities we can see Percentage of code is tested.
+--> Put x before it() --> xit() to disable test code. And also disable suit using xdescribe().
+
+
+
+
+
+
+
+

@@ -1,0 +1,121 @@
+* Angular Component Test
+--> Use component name as name in describe('MyFirstComponent', ()=>{}).
+--> Every it('Should ...', ()=>{}) start with "Should". Bcoz we are expecting test case true or false. 
+
+* State Change Method
+--> When we change state or outer variable then its called state change or Modify state change.
+--> Create instance of component class so we can access member of it.
+--> This 3 line in it() is called AAA Structure. Arrange, Act, Alert
+
+
+--> Ts file
+export class FirstTestComponent implements OnInit {
+  totalVotes = 0;
+
+  constructor() { }
+  ngOnInit(): void {}
+
+  upVote() {
+    this.totalVotes++;
+  }
+
+  downVote() {
+    this.totalVotes--;
+  }
+}
+
+-->  Test File
+import { FirstTestComponent } from './first-test.component';
+
+describe('FirstTestComponent', () => {
+  it('Should increase totalVote when upVote', () => {
+    const component = new FirstTestComponent();  // Arrange
+    component.upVote();                          // Act (Call method)
+    expect(component.totalVotes).toBe(1);        // Assert
+  });
+  it('Should decrease totalVote when downVote', () => {
+    const component = new FirstTestComponent();
+    component.downVote();
+    expect(component.totalVotes).toBe(-1);
+  });
+});
+
+- - - - - - -  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+* Now we want to move instance const component = new FirstTestComponent(); Outside of it().
+--> Bcoz it is common in both test. Now see the output.
+--> It will fail. And totalVote should be 0 for decreaseVote() test.
+--> So here First test should be impact on second test. It is called side effect. 
+
+describe('FirstTestComponent', () => {
+  const component = new FirstTestComponent();  // Arrange
+
+  it('Should increase totalVote when upVote', () => {
+    component.upVote();                          // Act (Call method)
+    expect(component.totalVotes).toBe(1);        // Assert
+  });
+
+  it('Should decrease totalVote when downVote', () => {
+    component.downVote();
+    console.log('Total VOte....', component.totalVotes);
+    expect(component.totalVotes).toBe(0);
+    // Should not -1 Bcoz we use outer component. Should 1 if component inside in it().
+  });
+});
+
+--> This is not good practice. So test should not depend on other test.
+
+- - - - - - -  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+--> So, Solution is use beforeEach() Jasmin function.
+--> Test Runner call beforeEach() func before each test case. So here Assign comp type outside and initialize comp. inside beforeEach() function. It will create new instance each time for new test case.
+
+--> Test File
+describe('FirstTestComponent', () => {
+  let component: FirstTestComponent;
+
+  beforeEach(() => {
+    component = new FirstTestComponent();
+  });
+
+  it('Should increase totalVote when upVote', () => {
+    component.upVote();
+    expect(component.totalVotes).toBe(1);
+  });
+
+  it('Should decrease totalVote when downVote', () => {
+    component.downVote();
+    console.log('Total VOte....', component.totalVotes);
+    expect(component.totalVotes).toBe(-1);   // -1 bcoz beforeEach()
+  });
+});
+
+- - - - - - -  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Here 4 type of before and after jasmin function available. 
+
+1. beforeEach(): It will use for initial set up before each test case.
+2. afterEach(): It will use for clean up after each test case.
+3. beforeAll(): Do set up after all test case.
+4. afterAll():  Do clean up after all test case.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

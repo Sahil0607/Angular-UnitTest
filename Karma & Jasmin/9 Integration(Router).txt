@@ -1,0 +1,175 @@
+* Router
+1. We are writing interaction test to check this.router.navigate(['users']) is called with right arguments. Or interest properly.
+2. Ensure we have proper route.
+
+--> We don't have to work with real router in testing. If we do that we have to register route and change declaration.
+--> So we will create fake router its called stub.
+
+export class UserDetailComponent implements OnInit {
+  constructor(private router: Router, private route: ActivatedRoute) { }
+
+  ngOnInit() {
+    this.route.params.subscribe(p => {
+      if (p['id'] === 0) {
+        this.router.navigate(['not-found']);
+      }
+    });
+  }
+
+  save() {
+    this.router.navigate(['users']);
+  }
+
+}
+
+--> Test File
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { UserDetailComponent } from './user-detail.component';
+import { Router, ActivatedRoute } from '@angular/router';
+import { Observable, empty } from 'rxjs';
+
+class RouterStub {  // Here we'll create dummy and light weight router class
+  navigate(params) { // We don't need to add all method of router class
+    // Only need method which used in our component under test
+  }
+}
+
+class ActivatedRouteStub {
+  params: Observable<any> = empty(); // params is used in component as route.params. And it is observable
+}
+
+describe('UserDetailComponent', () => {
+  let component: UserDetailComponent;
+  let fixture: ComponentFixture<UserDetailComponent>;
+
+  beforeEach(async(() => {
+    TestBed.configureTestingModule({
+      declarations: [ UserDetailComponent ],
+      providers: [
+        { provide: Router, useClass: RouterStub}, // Replace Router with RouterStub in component.
+        { provide: ActivatedRoute, useClass: ActivatedRouteStub } // Replace ActivatedRoute with ActivatedRouteStub in component.
+      ], // We are telling to angular replace router class to router stub.
+    })
+    .compileComponents();
+  }));
+
+  beforeEach(() => {
+    fixture = TestBed.createComponent(UserDetailComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should redirect user to user page by saving ', () => {
+    const router = TestBed.get(Router);
+    const spy = spyOn(router, 'navigate'); // Spy on navigate method. No need to do and.callFake() bcoz this is already fake method.
+
+    component.save();
+    expect(spy).toHaveBeenCalledWith(['users']);
+  });
+});
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+* Dealing with route Params(ActivatedRoute property)
+
+class ActivatedRouteStub {
+  private subject = new Subject(); // It is observable. Ability to  Push new value to observable.
+
+  push(value) {
+    this.subject.next(value);  // Push value to observable.
+  }
+
+  get params() {
+    return  this.subject.asObservable(); // Using this we can use route.params as observable.
+  }
+  // params: Observable<any> = empty(); // params is used in component as route.params. And it is observable
+}
+
+it('should navigate user to not-found page when invalid user id is passed', () => {
+    const router = TestBed.get(Router);
+    const spy = spyOn(router, 'navigate'); // Spy on navigate method. No need to do and.callFake() bcoz this is already fake method.
+
+    const route: ActivatedRouteStub = TestBed.get(ActivatedRoute);  // Type is stub bcoz we are replacing with actstub
+    // Push the value in observable and use it as paramaeter pass to component.
+    route.push({ id: 0 }); // Pushing new value in observable
+    // It will execute this.router.navigate(['not-found']); in component.
+
+    expect(spy).toHaveBeenCalledWith(['not-found']);
+  });
+
+--> Here we are making fake observable of route.params. params is observable. So Fake observable created in ActivatedRouteStub as subject. Then we call fake route and navigate to link.
+--> The toHaveBeenCalled() matcher verifies whether the spied method has been called or not. It returns true if the spy was called.
+--> The toHaveBeenCalledWith() matcher verifies whether the spied method has been called with the right argument(s). It returns true if there has been any one call with the matching argument.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+* Router Outlet 
+--> App.component.html File. // My App
+<app-header></app-header>
+<router-outlet></router-outlet>
+
+--> <router-outlet> : This element informs Angular to update the application view with the component for the selected route.
+--> Test router outlet working or not. If we comment it or did typo so we have to test it.
+
+<nav>
+  <a routerLink="todos"></a>
+</nav>
+<router-outlet></router-outlet>
+
+We will do 2 test here.
+1. Make sure router-outlet is here in app.compo.html file.
+
+ beforeEach(async(() => {
+      TestBed.configureTestingModule({
+        imports: [ RouterTestingModule.withRoutes([]) ],
+        declarations: [ AppComponent ]
+      })
+      .compileComponents();
+    }));
+
+it('should have a router outlet', () => {
+        const de = fixture.debugElement.query(By.directive(RouterOutlet));
+        expect(de).not.toBeNull();
+    });
+
+2. Each link in navber is setup properly
+it('should have a link to todos page', () => {
+        const debugElements = fixture.debugElement.queryAll(By.directive(RouterLinkWithHref));
+
+        // <a href='/todos'>
+        const index = debugElements.findIndex(de => de.properties['href'] === '/todos' )
+        expect(index).toBeGreaterThan(-1);
+    });
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+* Shallow component test
+--> If we have bootstrap navber and we want to test it. It has a has different way to test.
+
+--> App.component.html File. // My App
+<app-header></app-header>.  // This is selector and it has all the bootstrap navbar.
+<router-outlet></router-outlet>
+
+--> App.compo.spec.ts file
+ beforeEach(async(() => {
+      TestBed.configureTestingModule({
+        imports: [ RouterTestingModule.withRoutes([]) ],
+        declarations: [ AppComponent ],
+        schemas: [ NO_ERRORS_SCHEMA ]  // Ignore and element or attributes it doesent recognize.
+      })
+      .compileComponents();
+    }));
+
+--> Move our test to navbar component spec file
+--> App-header.component.spec.ts file. 
+
+// Same as Above 2.test 
+it('should have a link to todos page', () => {
+        const debugElements = fixture.debugElement.queryAll(By.directive(RouterLinkWithHref));
+
+        // <a href='/todos'>
+        const index = debugElements.findIndex(de => de.properties['href'] === '/todos' )
+        expect(index).toBeGreaterThan(-1);
+    });
+
+
+

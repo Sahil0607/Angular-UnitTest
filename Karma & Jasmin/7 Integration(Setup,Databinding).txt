@@ -1,0 +1,185 @@
+* Integration Testing:
+
+--> 4 Mejor Things we are testing in integration testing.
+1. Testing Template
+2. Testing Navigation
+3. Testing Directives
+4. Dealing with asynchronies operation
+
+* Basic Setup
+
+--> Unit test we are used to create component new FirstComponent(). But in integration testing Angular will create component for us using TestBed.
+
+--> TestBed.configureTestingModule({}) --> It will create component for us. And accept metadata object, Similar that we provide in @NgModule in app.module.ts file. Ex: declaration, imports, bootstrap, providers.
+--> ComponentFixture is wrapper around our component.We can access component instance and template.
+--> fixture.nativeElement is return html element. Which is root Dom element for component template.
+--> fixture.debugElement is wrapper around native element. Using this we can quaring Dom element.
+
+second-testcomponent.spec.ts file
+describe('SecondTestComponent', () => {
+  let component: SecondTestComponent;
+  let fixture: ComponentFixture<SecondTestComponent>;
+
+  beforeEach(() => {
+    // Method take metadata object, Similar that we provide in @NgModule in app.module.ts file
+    TestBed.configureTestingModule({
+      declarations: [ SecondTestComponent ]
+    });
+
+    // Create instance of this component. Argument is type of component
+    fixture = TestBed.createComponent(SecondTestComponent);
+    component = fixture.componentInstance;  // Wrapper around component. get instance of component.
+
+    // Get dom element
+    fixture.nativeElement;  // Return html element. Which is root dom element for this html template.
+    fixture.debugElement; // Wrapper around native element.
+  });
+});
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+--> Another easy way to create setup. When ng g c first-test created spec will be setup by default.
+--> When we use webpack it will compile and bundle code in one file. So we don't need compileComponents() in first befEach(). So don't need compileComponents() in prev. approach.
+--> We can keep a setup which created by angularCli.
+--> compileComponents() is a chain with testbed config. Tell angular that compile all the components in declaration along with template with stylesheet.
+--> First beforeEach() is async bcoz compileComponents() method.
+--> The first fixture.detectChanges() triggers ngOnInit(). Call it first time before you change the component properties.
+
+describe('SecondTestComponent', () => {
+  let component: SecondTestComponent;
+  let fixture: ComponentFixture<SecondTestComponent>;
+
+  beforeEach(async(() => {    // Do file operation with async fashion. bcoz compileComponents method.
+    TestBed.configureTestingModule({
+      declarations: [ SecondTestComponent ]
+    })
+    .compileComponents();    // compile this component with ts html and css file.
+  }));
+
+  // Once component compile with compileComponents() async fashion. Then it will initialized comp. in second beforeEach.
+  beforeEach(() => {
+    fixture = TestBed.createComponent(SecondTestComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();     // Trigger ngOnInit()
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});
+ 
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+* Testing property and class binding.
+--> Predicate: Function return true if condition is met. By.css is check condition.
+
+--> Second-test.html file
+<div class="voter">
+    <i 
+        class="glyphicon glyphicon-menu-up vote-button"
+        [class.highlighted]="myVote == 1" 
+        (click)="upVote()"></i>
+        
+    <span class="vote-count">{{ totalVotes }}</span>
+    
+    <i 
+        class="glyphicon glyphicon-menu-down vote-button"
+        [class.highlighted]="myVote == -1" 
+        (click)="downVote()"></i>
+</div>
+
+--> second-test.component.ts
+export class SecondTestComponent {
+  @Input() othersVote = 0;
+  @Input() myVote = 0;
+  @Output() vote = new EventEmitter();
+
+  upVote() {
+    if (this.myVote === 1) {
+       return;
+    }
+    this.myVote++;
+    this.vote.emit({ myVote: this.myVote });
+  }
+
+  downVote() {
+    if (this.myVote === -1) {
+      return;
+    }
+    this.myVote--;
+    this.vote.emit({ myVote: this.myVote });
+  }
+
+  get totalVotes() {
+    return this.othersVote + this.myVote;
+  }
+}
+
+--> second-test.component.spec.ts file
+describe('SecondTestComponent', () => {
+  let component: SecondTestComponent;
+  let fixture: ComponentFixture<SecondTestComponent>;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      declarations: [ SecondTestComponent ]
+    })
+    .compileComponents();
+  });
+
+  beforeEach(() => {
+    fixture = TestBed.createComponent(SecondTestComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should render total votes', () => {
+    component.othersVote = 20;
+    component.myVote = 1;
+    fixture.detectChanges();  // Angular does not know when to change or re-run. We have to Tell manually.
+
+    // We want to test totalVotes in dom. So query and access totalvotes in dom
+    // Access {{totalVotes}} from dom
+    const de = fixture.debugElement.query(By.css('.vote-count'));  // Fixture is wrapper dom ele. and component instance.
+    // fixture.debugElement.query(By.directive(VoterComponent)); // Access By Custom Directive. Optional.
+    // fixture.debugElement.queryAll(By.css('.vote-count'));  // Query All element To match this predicate.
+
+    const el: HTMLElement = de.nativeElement;  // Using we can access html class
+    expect(el.innerText).toContain('21');  // Access html element el.innerText
+  });
+});
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+* Test Highlighted class when upvoted ([class.highlighted])
+
+it('should highlight the upvote button if i upVoted', () => {
+    component.myVote = 1;
+    fixture.detectChanges();
+
+    const de = fixture.debugElement.query(By.css('.glyphicon-menu-up'));
+    expect(de.classes['highlighted']).toBeTruthy();
+  });
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+* Now last we will test for event binding ((click)="upVote()").
+--> Use unit test in different file. And integration test in different file.
+--> For unit test use second-test.component.unit.spec.ts file.
+
+it('should increase totalvotes when click on upvote button', () => {
+    const button = fixture.debugElement.query(By.css('.glyphicon-menu-up'));
+    button.triggerEventHandler('click', null);  // Not need additional data. So use null. Recomended
+    // component.upVote(); // Also can use to access component instead dom element.
+
+    expect(component.myVote).toBe(1);
+  });
+
+
+
+
+
+
+
+
+
+

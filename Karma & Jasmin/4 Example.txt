@@ -1,0 +1,107 @@
+* Advance Example
+
+* Test with service and component
+
+--> If we don't want certain test to run then put x infant of describe.
+xdescribe('', ()=>{});
+--> Only run this test and ignore all other test than use f in front of describe.
+fdescribe()
+
+* Example
+
+describe('Test Without ts file', () => {
+  let expected = '';
+  let notExpected = '';
+  let expectedMatch = null;  // It is obj. not string
+
+  beforeEach(() => {
+    expected = 'Hello Test';
+    notExpected = 'Hello Fest';
+    expectedMatch = new RegExp(/^hello/);
+  });
+
+  afterEach(() => {
+    expected = '';
+    notExpected = '';
+  });
+
+  it('toBe', () => {
+    expect(expected).toBe('Hello Test');
+  });
+
+  it('not toBe', () => {
+    expect(notExpected).not.toBe('Hello Test');
+  });
+
+  it('Equal', () => {
+    expect(expected).toEqual('Hello Test');
+  });
+
+  it('Regex Match', () => {
+    expect('hello').toMatch(expectedMatch);
+  });
+});
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+* Example with service
+
+--> Use TestBed which is inject service inside test. So we can work with it.
+
+import { Injectable } from '@angular/core';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class MyServiceService {
+  add(a, b) {
+    return a + b;
+  }
+}
+
+--> Test file
+import { TestBed } from '@angular/core/testing';
+
+import { MyServiceService } from './my-service.service';
+
+describe('MyServiceService', () => {
+  let service: MyServiceService;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({});
+    service = TestBed.inject(MyServiceService);   // Access Service
+  });
+
+  it('should be created', () => {                // Check Service is created or not
+    expect(service).toBeTruthy();
+  });
+
+  it('should have add function', () => {
+    expect(service.add).toBeTruthy();           // Check fun is there or not
+  });
+
+  it('should add two numbers', () => {
+    expect(service.add(1, 2)).toBe(3);           // Access fun in sevice
+  });
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

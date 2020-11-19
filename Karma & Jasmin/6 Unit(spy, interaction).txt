@@ -1,0 +1,129 @@
+* Spies
+--> We are seeing component using service to make call to backend.
+--> Here we are focusing on ngOnInit. We will subscribe todos and initialize prop. From onInit.
+--> We are not gone call service or any other backend services. We cannot do that in unit testing.
+--> We cannot touch database, file system, callback and services. Instead we will do fake service.
+--> So we will not do backend call just do fake observable.
+--> spyOn(object, name of method in this object): we can put spy on a method on a class. Using it we can check weather this method is called or we can changed implementation of that method with different value. So basically using spy we have control over a method in a class.
+
+First-test.component.ts
+export class FirstTestComponent implements OnInit {
+  todos: any[] = [];
+  message;
+  constructor(private firstTestService: FirstTestService) {}
+
+  ngOnInit(): void {
+    this.firstTestService.getTodos().subscribe(t => this.todos = t);
+  }
+
+  add() {
+    const newTodos = { title: '...'};
+    this.firstTestService.addTodo(newTodos).subscribe(
+      td => this.todos.push(td),
+      error => this.message = error);
+  }
+
+  delete(id) {
+    if (confirm('Are you sure?')) {
+      this.firstTestService.delete(id).subscribe();
+    }
+  }
+}
+
+First-test.component.specs.ts
+describe('FirstTestComponent', () => {
+    let component: FirstTestComponent;
+    let service: FirstTestService;
+
+    beforeEach(() => {
+        service = new FirstTestService(null);
+        component = new FirstTestComponent(service);
+    });
+
+    it('Should set todos property with items returned from the server', () => {
+        const todos = [
+            {id: '1', name: 'a'},    // Instead Add Our data
+            {id: '2', name: 'b'},
+            {id: '3', name: 'c'},
+        ];
+        // Assert
+        spyOn(service, 'getTodos').and.callFake(() => {
+            return from([ todos ]); // from(): converts anything to observable
+        }); // With this we can change implementa. of this method
+
+        // Act (call method)
+        component.ngOnInit();
+
+        // Assert
+        // expect(component.todos.length).toBeGreaterThan(0);
+        // expect(component.todos.length).toBe(3); // Return 3 item from server.
+        expect(component.todos).toBe(todos);  // More specific
+    }); // When we call getTodos() method it will call above fake method
+});
+
+-  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
+
+* Intection Testing
+--> Last Task we focused on ngOnInit() method. Here we are focusing on add() method. Method is above.
+--> We are writing 3 test. 
+1. This method is going to call server to save changes. So, Make sure service.add() called.
+2. If it successful, we will make sure todo is add to this.todo Array.
+3. Make sure If server send error we will put in message property.
+
+add() {
+    const newTodos = { title: '...'};
+    this.firstTestService.addTodo(newTodos).subscribe(
+      td => this.todos.push(td),
+      error => this.message = error);
+  }
+
+First-test.component.spec.ts
+
+import { FirstTestComponent } from './first-test.component';
+import { FirstTestService } from './first-test.service';
+import { Observable, from, empty, throwError } from 'rxjs';
+
+describe('FirstTestComponent', () => {
+    let component: FirstTestComponent;
+    let service: FirstTestService;
+
+    beforeEach(() => {
+        service = new FirstTestService(null);
+        component = new FirstTestComponent(service);
+    });
+
+    it('Should call the server to save the changes when new todo item is added', () => {
+        // Arrenge
+        let spy = spyOn(service, 'addTodo').and.callFake(td => {
+            return empty();
+        });
+
+        // Act
+        component.add();
+
+        // Assert
+        expect(spy).toHaveBeenCalled();  // Test if given method is called.
+    });
+
+    it('Should add new todo returned from the server', () => {
+        let todo = { id: '1' };
+        let spy = spyOn(service, 'addTodo').and.returnValue(from([ todo ])); // Cleaner way. Dont need callFake.
+
+        component.add();
+        expect(component.todos.indexOf(todo)).toBeGreaterThan(-1);
+    });
+
+    it('Should set message property if server returned error when adding new todo', () => {
+        const err = 'oops error!';
+        // spyOn(service, 'add').and.returnValue(throwError(new Error(err)));
+    	spyOn(service, 'add').and.returnValue(throwError(err));
+
+        component.add();
+        expect(component.message).toBe(err);
+    });
+});
+
+-  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
+
+
+

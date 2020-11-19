@@ -1,0 +1,99 @@
+* Dependency
+--> Test service dependancy.
+
+--> todo-test.component.ts file.
+export class TodoTestComponent implements OnInit {
+  todos: any = [];
+  message;
+
+  constructor(private service: TodoTestService) {}
+
+  ngOnInit() {
+    this.service.getTodos().subscribe(t => this.todos = t);
+  }
+
+  add() {
+    const newTodo = { title: '... ' };
+    this.service.add(newTodo).subscribe(
+      t => this.todos.push(t),
+      err => this.message = err);
+  }
+
+  delete(id) {
+    if (confirm('Are you sure?')) {
+      this.service.delete(id).subscribe();
+    }
+  }
+}
+
+--> todo-test.service.ts file
+import { Injectable } from '@angular/core';
+import 'rxjs/add/operator/map';
+import { HttpClient } from '@angular/common/http';
+import { map } from 'rxjs/operators';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class TodoTestService {
+  constructor(private http: HttpClient) {
+  }
+
+  add(todo) {
+    return this.http.post('...', todo).pipe(map(r => r));
+  }
+
+  getTodos() {
+    return this.http.get('...').pipe(map(r => r));
+  }
+
+  getTodosPromise() {
+    return this.http.get('...').pipe(map(r => r)).toPromise();
+  }
+
+  delete(id) {
+    return this.http.delete('...').pipe(map(r => r));
+  }
+}
+
+--> When we add dependancy, we have to add provider in test file. Same as app.module.ts file. Only add in providers if we add dependacy at module level. 
+Todo-test.spec.tc
+describe('SeventhDependancyComponent', () => {
+  let component: SeventhDependancyComponent;
+  let fixture: ComponentFixture<SeventhDependancyComponent>;
+  let service: DependancyTestService;
+
+  beforeEach(async(() => {
+    TestBed.configureTestingModule({
+      declarations: [ SeventhDependancyComponent ],
+      imports: [ HttpClientModule ],
+      providers: [
+        {provide: DependancyTestService, useValue: {
+          getTodos: () => from([ [1, 2, 3] ]) // of({id: 123, name: 'Product'})
+        }}
+      ]
+    })
+    .compileComponents();
+  }));
+
+  beforeEach(() => {
+    fixture = TestBed.createComponent(SeventhDependancyComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should load todos from the server', () => {
+    service = TestBed.get(DependancyTestService);
+    spyOn(service, 'getTodos').and.callThrough();
+
+    component.ngOnInit();
+    fixture.detectChanges();
+
+    expect(service.getTodos).toHaveBeenCalled();
+    expect(component.todos).toEqual([1, 2, 3]);
+    expect(component.todos.length).toBe(3);
+  });
+});
+
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
