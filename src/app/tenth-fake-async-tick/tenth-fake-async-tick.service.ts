@@ -6,8 +6,7 @@ import { map } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class TenthFakeAsyncTickService {
-  constructor(private http: HttpClient) {
-  }
+  constructor(private http: HttpClient) {}
 
   add(todo) {
     return this.http.post('...', todo).pipe(map(r => r));
@@ -18,7 +17,12 @@ export class TenthFakeAsyncTickService {
   }
 
   getTodosPromise() {
-    return this.http.get('...').pipe(map(r => r)).toPromise();
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        resolve([1, 2, 3]);
+      }, 1000);
+    });
+    // return this.http.get('...').toPromise();
   }
 
   delete(id) {
