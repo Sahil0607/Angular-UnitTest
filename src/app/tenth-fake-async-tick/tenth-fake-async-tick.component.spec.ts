@@ -50,12 +50,10 @@ describe('TenthFakeAsyncTickComponent', () => {
 
   it('should load todos from the server using fakeAsyanc and tick', fakeAsync(() => {
     service = fixture.debugElement.injector.get(TenthFakeAsyncTickService);
-
-    // fixture.debugElement.injector.get(TodoTestService); // This is more verbal so use different approach
     spyOn(service, 'getTodosPromise').and.callThrough();
 
     component.ngOnInit();
-    fixture.detectChanges();  // Angular call ngoninit and initialized todos property.
+    // fixture.detectChanges();  // Angular call ngoninit and initialized todos property.
     tick(1000); // Delay this line until async process completed. Or simulate passage of time. Can use tick(1000); wait 1 sec
     fixture.detectChanges();
 

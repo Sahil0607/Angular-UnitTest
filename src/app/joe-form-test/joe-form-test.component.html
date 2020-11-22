@@ -1,0 +1,21 @@
+<h1> {{title}} </h1>
+
+<form [formGroup]="form" (ngSubmit)="submitForm()">
+    <div>
+        <input type="text" name="name" formControlName="name" />
+        <div *ngIf="form.controls.name.invalid && form.controls.name.touched" class="error">name required</div>
+    </div>
+    <div>
+        <input type="number" name="loanAmount" formControlName="loanAmount" />
+        <div *ngIf="form.controls.loanAmount.invalid && form.controls.loanAmount.touched" class="error">amount required</div>
+    </div>
+    <div>
+        <button type="submit">Submit</button>
+    </div>
+</form>
+
+<div class="message" *ngIf="showMessage">
+    <p>Name: {{data?.name}} </p>
+    <p>Loan Amount: {{data?.amount | currency: 'USD'}} </p>
+    <p>Approved: {{data?.isApproved ? 'true' : 'false'}} </p>
+</div>
