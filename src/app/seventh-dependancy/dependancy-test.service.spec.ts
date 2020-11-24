@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { DependancyTestService } from './dependancy-test.service';
 
-xdescribe('DependancyTestService', () => {
+describe('DependancyTestService', () => {
   let service: DependancyTestService;
 
   beforeEach(() => {

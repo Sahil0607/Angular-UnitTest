@@ -1,6 +1,9 @@
+import { isPlatformBrowser, isPlatformServer } from '@angular/common';
+import { PLATFORM_ID } from '@angular/core';
 import { async, ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { By } from '@angular/platform-browser';
+import { browser } from 'protractor';
 import { Observable, of } from 'rxjs';
 import { delay } from 'rxjs/operators';
 
@@ -22,7 +25,10 @@ describe('JoeFormTestComponent', () => {
     TestBed.configureTestingModule({
       declarations: [ JoeFormTestComponent ],
       imports: [ ReactiveFormsModule ],
-      providers: [{ provide: LoanApprovalService, useValue: loanApprovalServiceStub }]
+      providers: [
+        { provide: LoanApprovalService, useValue: loanApprovalServiceStub },
+        { provide: PLATFORM_ID, useValue: 'server' },  // change platform id for component
+      ]
     })
     .compileComponents();
   }));
@@ -33,6 +39,21 @@ describe('JoeFormTestComponent', () => {
     loanApprovalService = TestBed.inject(LoanApprovalService);
     fixture.detectChanges();
   });
+
+  describe('Check for Platform id', () => {
+    it('should check platform server id', () => {
+      const result = component.getTodo();
+      expect(result).toBe(false);
+    });
+  });
+
+  // it('should check platform browser id', () => {
+  //   // PLATFORM_ID = browser;
+  //   const platform = isPlatformBrowser('browser');
+  //   console.log(platform);
+  //   console.log(PLATFORM_ID);
+  //   expect(platform).toBe(true);
+  // });
 
   it('should create', () => {
     expect(component).toBeTruthy();
