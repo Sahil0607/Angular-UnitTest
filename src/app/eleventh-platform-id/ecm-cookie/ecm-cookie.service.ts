@@ -62,7 +62,7 @@ export class EcmCookieService {
     if (isPlatformServer(this._platform)) { return false; }
 
     if (this.hasEcmCookie) {
-      if (typeof name === 'string'  && name.length && typeof this.cookieValueMap[name] !== undefined) {
+      if (typeof name === 'string'  && name.length && typeof this.cookieValueMap[name] !== 'undefined') {
         return this.ecm[this.cookieValueMap[name] - 1];
       } else if (isDevMode) {
         console.warn('EcmCookieService - getValueByName: you provided a non-string name or the name you passed was not valid. Valid names are: ',
@@ -86,6 +86,6 @@ export class EcmCookieService {
     } else if (isDevMode) {
       console.warn('The ECM cookie service did not find an ECM cookie');
     }
-    // return false;
+    return false;
   }
 }

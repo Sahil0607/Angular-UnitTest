@@ -55,7 +55,7 @@ describe('EcmCookieService', () => {
       it('can load instance', () => {
         expect(service).toBeTruthy();
       });
-      it('should check if CBOLECM exists in cookies in browser', () => {
+      it('should return cookie if CBOLECM exists in cookies in browser', () => {
         spyOn(cookieServiceSpy, 'getCookie').and.returnValue('-N-N--N-Y-N-Y-037-142-00');
         const cookie = cookieServiceSpy.getCookie('CBOLECM');
         service.init();
@@ -78,7 +78,7 @@ describe('EcmCookieService', () => {
       });
     });
     describe('getValueByIndex()', () => {
-      it('should return true if platform is not server', () => {
+      it('should return value from ecm array if platform is not server', () => {
         const hasEcmCookie = 'hasEcmCookie';
         const ecm = 'ecm';
         service[hasEcmCookie] = true;
@@ -95,7 +95,7 @@ describe('EcmCookieService', () => {
         expect(typeof index).toBe('number');
         expect(service.getValueByIndex(index)).not.toBe(false);
       });
-      it('should check typeof index inside ecm array is NOT undefined', () => {
+      it('should check typeof index inside ecm array is not undefined', () => {
         const ecm = 'ecm';
         const hasEcmCookie = 'hasEcmCookie';
         const index = 4;
@@ -112,29 +112,27 @@ describe('EcmCookieService', () => {
         service[hasEcmCookie] = true;
         expect(service.getValueByIndex(index)).toBe('Y');
       });
-      // code error, use return false in getValueByIndex()
-      // it('should check for hasEcmCookie to be false', () => {
-      //   const hasEcmCookie = 'hasEcmCookie';
-      //   service[hasEcmCookie] = false;
-      //   expect(service.getValueByIndex(4)).toBe(false);
-      // });
-      it('should check isDevMode to be true', () => {
+      it('should return false if hasEcmCookie and isDevMode to be false', () => {
         const hasEcmCookie = 'hasEcmCookie';
         service[hasEcmCookie] = false;
         const devModeService = TestBed.inject(DevModeService);
+        spyOn(devModeService, 'isDevMode').and.returnValue(false);
+        console.log(service.getValueByIndex(4), 'Hello');
+        expect(service.getValueByIndex(4)).toBeFalse();
+      });
+      it('should check isDevMode to be true', () => {
+        const devModeService = TestBed.inject(DevModeService);
         spyOn(devModeService, 'isDevMode').and.returnValue(true);
-        service.getValueByIndex(4);
         expect(isDevMode()).toBe(true);
       });
-      it('should return warning (check method) if devmode is true', () => {
+      it('should return warning if devmode is true', () => {
         const hasEcmCookie = 'hasEcmCookie';
         service[hasEcmCookie] = false;
         const devModeService = TestBed.inject(DevModeService);
         spyOn(devModeService, 'isDevMode').and.returnValue(true);
-        const spy = spyOn(console, 'warn').and.callThrough();
+        spyOn(console, 'warn').and.callThrough();
         service.getValueByIndex(4);
         expect(console.warn).toHaveBeenCalled();
-        expect(service.getValueByIndex(4)).toBe(console.warn('The ECM cookie service did not find an ECM cookie'));
       });
     });
 
@@ -169,7 +167,6 @@ describe('EcmCookieService', () => {
         const cookieValMap = 'cookieValueMap';
         const cookieValueMap = service[cookieValMap];
         expect(cookieValueMap[name]).toEqual(5);
-        expect(typeof name).toBe('string');
       });
       it('should check for typeof cookieValueMap[name] and should return number', () => {
         const name = 'autoPayEnrllnd';
@@ -191,15 +188,15 @@ describe('EcmCookieService', () => {
         spyOn(devModeService, 'isDevMode').and.returnValue(true);
         expect(isDevMode()).toBe(true);
       });
-      // Error in code check .ts in if statment.
-      // it('should return warning with cookieValueMap if isDevMode is true', () => {
-      //   const hasEcmCookie = 'hasEcmCookie';
-      //   service[hasEcmCookie] = true;
-      //   const devModeService = TestBed.inject(DevModeService);
-      //   spyOn(devModeService, 'isDevMode').and.returnValue(true);
-      //   expect(service.getValueByName(12)).toBeFalse();
-      //   expect(service.getValueByName('CBOLECM')).toBeFalse();
-      // });
+      it('should return warning with cookieValueMap if isDevMode is true', () => {
+        const hasEcmCookie = 'hasEcmCookie';
+        service[hasEcmCookie] = true;
+        const devModeService = TestBed.inject(DevModeService);
+        spyOn(devModeService, 'isDevMode').and.returnValue(true);
+        spyOn(console, 'warn').and.callThrough();
+        service.getValueByName('CBOLECM');
+        expect(console.warn).toHaveBeenCalled();
+      });
       it('should check for typeof cookieValueMap[name] and should return "undefined"', () => {
         const hasEcmCookie = 'hasEcmCookie';
         const cookieValueMap = 'cookieValueMap';
@@ -208,7 +205,7 @@ describe('EcmCookieService', () => {
         spyOn(devModeService, 'isDevMode').and.returnValue(true);
         expect(service[cookieValueMap]['CBOLECM']).toBeUndefined();
       });
-      it('should return false', () => {
+      it('should return false for passing number', () => {
         const hasEcmCookie = 'hasEcmCookie';
         service[hasEcmCookie] = true;
         const devModeService = TestBed.inject(DevModeService);
@@ -222,7 +219,7 @@ describe('EcmCookieService', () => {
         spyOn(devModeService, 'isDevMode').and.returnValue(true);
         expect(service.getValueByName('isCitigoldCookie')).toBeFalse();
       });
-      it('should return console warning', () => {
+      it('should return console warning if isDevMode and hasEcmCookie to be false', () => {
         const hasEcmCookie = 'hasEcmCookie';
         service[hasEcmCookie] = false;
         const devModeService = TestBed.inject(DevModeService);
@@ -231,8 +228,7 @@ describe('EcmCookieService', () => {
         service.getValueByName('CBOLECM');
         expect(console.warn).toHaveBeenCalled();
       });
-      // it('should check for hasEcmCookie to be false', () => {});  // same below
-      it('should return false for the hasEcmCookie and isDevMod false', () => {
+      it('should return false for the hasEcmCookie false and isDevMod false', () => {
         const hasEcmCookie = 'hasEcmCookie';
         service[hasEcmCookie] = false;
         const devModeService = TestBed.inject(DevModeService);
