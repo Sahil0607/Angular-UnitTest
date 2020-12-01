@@ -77,7 +77,7 @@ describe('EcmCookieService', () => {
         expect(service[hasEcmCookie]).toBe(false);
       });
     });
-    describe('getValueByIndex', () => {
+    describe('getValueByIndex()', () => {
       it('should return true if platform is not server', () => {
         const hasEcmCookie = 'hasEcmCookie';
         const ecm = 'ecm';
@@ -95,7 +95,7 @@ describe('EcmCookieService', () => {
         expect(typeof index).toBe('number');
         expect(service.getValueByIndex(index)).not.toBe(false);
       });
-      it('should check typeof index inside ecm array is NOT Undefined', () => {
+      it('should check typeof index inside ecm array is NOT undefined', () => {
         const ecm = 'ecm';
         const hasEcmCookie = 'hasEcmCookie';
         const index = 4;
@@ -138,19 +138,13 @@ describe('EcmCookieService', () => {
       });
     });
 
-    describe('getValueByName', () => {
+    describe('getValueByName()', () => {
       it('should return true if platform is not server', () => {
         const hasEcmCookie = 'hasEcmCookie';
         const ecm = 'ecm';
         service[hasEcmCookie] = true;
         service[ecm] = ['', 'N', 'N', '', 'N', 'Y', 'N', 'Y', '037', '142', '00'];
         expect(service.getValueByName('isCitigoldCookie')).toBe('');
-      });
-      it('should return true if platform is not server', () => {
-        const hasEcmCookie = 'hasEcmCookie';
-        const ecm = 'ecm';
-        service[hasEcmCookie] = true;
-        service[ecm] = ['', 'N', 'N', '', 'N', 'Y', 'N', 'Y', '037', '142', '00'];
         expect(service.getValueByName('isVANEligible')).toBe('Y');
         expect(service.getValueByIndex(3)).not.toBe(false);
       });
