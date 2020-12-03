@@ -1,7 +1,6 @@
 import { Injectable, isDevMode, PLATFORM_ID } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CookieService } from '../cookie/cookie.service';
-
 import { EcmCookieService } from './ecm-cookie.service';
 
 @Injectable({ providedIn: 'root' })
@@ -24,6 +23,7 @@ describe('EcmCookieService', () => {
     beforeEach(() => {
       TestBed.configureTestingModule({
         providers: [
+          EcmCookieService,
           { provide: CookieService, useValue: cookieServiceSpy},
           { provide: PLATFORM_ID, useValue: 'server'}
         ]
@@ -43,6 +43,7 @@ describe('EcmCookieService', () => {
     beforeEach(() => {
       TestBed.configureTestingModule({
         providers: [
+          EcmCookieService,
           { provide: CookieService, useValue: cookieServiceSpy},
           { provide: PLATFORM_ID, useValue: 'browser'}
         ]
@@ -60,8 +61,8 @@ describe('EcmCookieService', () => {
         const cookie = cookieServiceSpy.getCookie('CBOLECM');
         service.init();
         expect(cookieServiceSpy.getCookie).toHaveBeenCalledWith('CBOLECM');
-        expect(cookie.length).toBeGreaterThan(0);
-        expect(cookie.length).not.toBeNull();
+        expect(typeof cookie).toBe('string');
+        expect(cookie).not.toBeUndefined();
       });
       it('should return true if CBOMECM present', () => {
         spyOn(cookieServiceSpy, 'getCookie').and.returnValue('-N-N--N-Y-N-Y-037-142-00');
