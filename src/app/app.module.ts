@@ -19,7 +19,6 @@ import { JoeFormTestComponent } from './joe-form-test/joe-form-test.component';
 
 import { HighlightDirective } from './ninth-async-directive-attr/directive-attr/highlight.directive';
 import { NewDirectiveDirective } from './ninth-async-directive-attr/new-directive/new-directive.directive';
-import { EleventhPlatformIdComponent } from './eleventh-platform-id/eleventh-platform-id.component';
 
 @NgModule({
   declarations: [
@@ -37,7 +36,6 @@ import { EleventhPlatformIdComponent } from './eleventh-platform-id/eleventh-pla
     NewDirectiveDirective,
     TenthFakeAsyncTickComponent,
     JoeFormTestComponent,
-    EleventhPlatformIdComponent,
   ],
   imports: [
     BrowserModule,
