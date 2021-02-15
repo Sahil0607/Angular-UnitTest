@@ -1,7 +1,7 @@
 import { PLATFORM_ID } from '@angular/core';
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { EleventhPlatformIdComponent } from './eleventh-platform-id.component';
+import { NgxWebstorageModule } from 'ngx-webstorage';
 
 describe('EleventhPlatformIdComponent Server PlatformId', () => {
   let component: EleventhPlatformIdComponent;
@@ -42,6 +42,7 @@ describe('EleventhPlatformIdComponent Browser PlatformId', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ EleventhPlatformIdComponent ],
+      imports: [ NgxWebstorageModule.forRoot() ],
       providers: [
         { provide: PLATFORM_ID, useValue: 'browser' },  // change platform id for component
       ]
@@ -53,6 +54,15 @@ describe('EleventhPlatformIdComponent Browser PlatformId', () => {
     fixture = TestBed.createComponent(EleventhPlatformIdComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+  });
+
+  it('should check value added in storage', () => {
+    // console.log(component.setLocalStorage);
+    component.setLocalStorage('myName', 'Alex');
+    // spyOn(storage, 'store').and.returnValue('true');
+    // spyOn(storage, 'retrieve').and.returnValue('Alex');
+    console.log(component.getLocalStorage('myName'));
+    expect(component.getLocalStorage('myName')).toBe('Alex');
   });
 
   it('should create', () => {

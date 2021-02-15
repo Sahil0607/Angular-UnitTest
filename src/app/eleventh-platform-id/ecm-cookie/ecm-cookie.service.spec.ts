@@ -15,7 +15,7 @@ class CookieServiceStub {
   getCookie: any = cookieName => { };
 }
 
-fdescribe('EcmCookieService', () => {
+describe('EcmCookieService', () => {
   let service: EcmCookieService;
   const cookieServiceSpy = new CookieServiceStub();
   let mockPlatformId = '';
@@ -153,9 +153,8 @@ fdescribe('EcmCookieService', () => {
     const ecm = 'ecm';
     service[hasEcmCookie] = true;
     service[ecm] = ['', 'N', 'N', '', 'N', 'Y', 'N', 'Y', '037', '142', '00'];
-    const result = service.getValueByName(name);
     expect(typeof name).toBe('string');
-    expect(result).toBe('Y');
+    expect(service.getValueByName(name)).toBe('Y');
   });
   it('should check "name" exist in cookieValueMap object', () => {
     mockPlatformId = 'browser';
@@ -185,7 +184,6 @@ fdescribe('EcmCookieService', () => {
     const ecm = 'ecm';
     service[hasEcmCookie] = true;
     service[ecm] = ['', 'N', 'N', '', 'N', 'Y', 'N', 'Y', '037', '142', '00'];
-    expect(service.getValueByName(name)).not.toBeUndefined();
     expect(service.getValueByName(name)).toBe('N');
   });
   it('should check only for isDevMode', () => {

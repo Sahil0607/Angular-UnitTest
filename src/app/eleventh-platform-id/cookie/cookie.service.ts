@@ -3,9 +3,10 @@ import { Injectable } from '@angular/core';
 @Injectable({
   providedIn: 'root'
 })
-export class CookieService {
+export class CookieService{
+  constructor() {
+  }
 
-  constructor() { }
   getCookie(cookieName: string): string {
     return '-N-N--N-Y-N-Y-142-00';
   }
